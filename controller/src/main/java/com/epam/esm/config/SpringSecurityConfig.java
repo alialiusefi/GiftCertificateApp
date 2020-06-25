@@ -94,7 +94,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/v2/auth/**")
                 .and().ignoring().antMatchers(HttpMethod.GET, "/v1/giftcertificates/**")
                 .and().ignoring().antMatchers(HttpMethod.GET, "/v1/giftcertificates/**")

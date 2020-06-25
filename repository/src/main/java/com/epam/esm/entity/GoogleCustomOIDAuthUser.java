@@ -25,7 +25,7 @@ public class GoogleCustomOIDAuthUser extends CustomOAuthUser implements OidcUser
 
     @Override
     public String getSubject() {
-        return (String) this.getAttribute("email");
+        return (String) this.getClaims().get("email");
     }
 
     @Override
