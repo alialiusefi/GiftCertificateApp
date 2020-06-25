@@ -1,4 +1,4 @@
-# Backend RESTful API Gift Certificate (2020).
+# Backend RESTful API Gift Certificate
 A **RESTful API** where authorized users can order certificates and admins can add/edit these certificates.
 * Developed and added a multi-threaded JSON file parser and validator module using Java 8 concurrent technology.
  * Technologies used: **Git**, **Java**, **Gradle**, **Spring** Framework (Spring IoC, Spring Security, Spring
