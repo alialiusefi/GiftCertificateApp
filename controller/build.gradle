@@ -20,5 +20,5 @@ dependencies {
 }
 
 bootJar {
-    mainClassName = 'com.epam.esm.controller.runner.Application'
+    launchScript()
 }

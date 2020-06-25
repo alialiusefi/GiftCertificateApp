@@ -17,52 +17,72 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+
 public class ScannerManager {
 
     static final Logger LOG = LoggerFactory.getLogger(ScannerManager.class);
     private ExecutorService executorService;
     private YAMLConfig config;
     private GiftCertificateService giftCertificateService;
-
+    private boolean enabled;
     @Autowired
     private Environment environment;
 
-    public ScannerManager(YAMLConfig config, GiftCertificateService giftCertificateService) {
+    public ScannerManager(YAMLConfig config, GiftCertificateService giftCertificateService, boolean enabled) {
         this.config = config;
         this.executorService = Executors.newScheduledThreadPool(1);
         this.giftCertificateService = giftCertificateService;
+        this.enabled = enabled;
     }
 
 
     @PostConstruct
     public void init() {
-        try {
-            LOG.info("|============STATISTICS============|");
-            LOG.info("|============BEFORE-SCAN===========|" +
-                    "\n$ Amount of certificates in db before scanning: " + giftCertificateService.getCountAllGiftCertificates() +
-                    "\n$ Amount of files in /giftcertificates before scanning: " + fileCount(Paths.get(config.getScanPath())) +
-                    "\n$ Amount of files in /error before scanning: " + fileCount(Paths.get(config.getErrorPath())) +
-                    "Starting async json file processing");
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-        ScheduledExecutorService scheduledExecutorService = (ScheduledExecutorService) this.executorService;
-        ScannerTask scannerTask = new ScannerTask(this, config, giftCertificateService);
-        scheduledExecutorService.scheduleAtFixedRate(scannerTask,
-                0, config.getScanDelay(), TimeUnit.MILLISECONDS);
-        ScheduledExecutorService statisticsAfterScanService = Executors.newScheduledThreadPool(1);
-        statisticsAfterScanService.scheduleAtFixedRate(() -> {
+    if (enabled) {
+
+      try {
+        LOG.info("|============STATISTICS============|");
+        LOG.info(
+            "|============BEFORE-SCAN===========|"
+                + "\n$ Amount of certificates in db before scanning: "
+                + giftCertificateService.getCountAllGiftCertificates()
+                + "\n$ Amount of files in /giftcertificates before scanning: "
+                + fileCount(Paths.get(config.getScanPath()))
+                + "\n$ Amount of files in /error before scanning: "
+                + fileCount(Paths.get(config.getErrorPath()))
+                + "Starting async json file processing");
+      } catch (IOException e) {
+        LOG.error(e.getMessage(), e);
+      }
+      ScheduledExecutorService scheduledExecutorService =
+          (ScheduledExecutorService) this.executorService;
+      ScannerTask scannerTask = new ScannerTask(this, config, giftCertificateService);
+      scheduledExecutorService.scheduleAtFixedRate(
+          scannerTask, 0, config.getScanDelay(), TimeUnit.MILLISECONDS);
+      ScheduledExecutorService statisticsAfterScanService = Executors.newScheduledThreadPool(1);
+      statisticsAfterScanService.scheduleAtFixedRate(
+          () -> {
             try {
-                if (fileCount(Paths.get(config.getScanPath())) == 0) {
-                    LOG.info("|============AFTER-SCAN===========|" +
-                            "\n$ Amount of certificates in db after scanning: " + giftCertificateService.getCountAllGiftCertificates()
-                            + "\n$ Amount of files in /giftcertificates after scanning: " + fileCount(Paths.get(config.getScanPath()))
-                            + "\n$ Amount of files in /error after scanning: " + fileCount(Paths.get(config.getErrorPath())));
-                }
+              if (fileCount(Paths.get(config.getScanPath())) == 0) {
+                LOG.info(
+                    "|============AFTER-SCAN===========|"
+                        + "\n$ Amount of certificates in db after scanning: "
+                        + giftCertificateService.getCountAllGiftCertificates()
+                        + "\n$ Amount of files in /giftcertificates after scanning: "
+                        + fileCount(Paths.get(config.getScanPath()))
+                        + "\n$ Amount of files in /error after scanning: "
+                        + fileCount(Paths.get(config.getErrorPath())));
+              }
             } catch (IOException e) {
-                LOG.debug(e.getMessage());
+              LOG.debug(e.getMessage());
             }
-        }, config.getScanDelay(), config.getScanDelay(), TimeUnit.MILLISECONDS);
+          },
+          config.getScanDelay(),
+          config.getScanDelay(),
+          TimeUnit.MILLISECONDS);
+        } else {
+        LOG.info("Scanner is not enabled! Check property file");
+    }
 
     }
 
